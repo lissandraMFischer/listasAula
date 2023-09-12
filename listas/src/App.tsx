@@ -1,7 +1,10 @@
-import { useState, useEffect  } from 'react'
+import { useState, useEffect, useRef  } from 'react'
 
 //Função principal
 export default function App(){
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const primeiraR = useRef(true);
 
   const [input, setInput] = useState("");
   const [tarefas, setTarefas] = useState<string[]>([])
@@ -13,9 +16,20 @@ export default function App(){
     
     useEffect(()=>{
       const tarefaSalva = localStorage.getItem("@cursoreact")
-      console.log(tarefaSalva);
-    
+      if(tarefaSalva){
+        setTarefas(JSON.parse(tarefaSalva));
+      }
     }, [])
+
+    useEffect(()=> {
+      if(primeiraR.current){
+        primeiraR.current = false;
+        return;
+      }
+      
+      localStorage.setItem("@cursoreact", JSON.stringify(tarefas))
+      console.log("useEffect chamado!")
+  }, [tarefas]);
 
     function registrar(){
       if(!input){
@@ -29,8 +43,7 @@ export default function App(){
       }
 
       setTarefas(tarefas => [...tarefas, input])
-      setInput("")
-      localStorage.setItem("@cursoreact",JSON.stringify([...tarefas, input]))
+      setInput("");
     }
 
     function editarTarefaSalva(){
@@ -39,21 +52,23 @@ export default function App(){
 
       todasTarefas[findIndexTarefa]=input;
       setTarefas(todasTarefas);
+      
       setEditarTarefa({
         enabled: false,
         tarefa: ''
       })
-      setInput("")
-      localStorage.setItem("@cursoreact", JSON.stringify(todasTarefas))
+      setInput("");
 
     }
 
     function excluir(item: string){
       const excluirTarefa = tarefas.filter(tarefas => tarefas !== item)
       setTarefas(excluirTarefa)
-      localStorage.setItem("@cursoreact", JSON.stringify(excluirTarefa))
+      
     }
     function editar(item: string){
+      inputRef.current?.focus();
+
       setInput(item)
       setEditarTarefa({
         enabled:true,
@@ -63,14 +78,14 @@ export default function App(){
 
    return (
       <div>
-
-        
+       
         <h1>Lista de tarefas</h1>
 
         <input
           placeholder="Digite uma tarefa..."
           value={input}
           onChange={ (e) => setInput(e.target.value)}
+          ref={inputRef}
         />
         <button onClick={registrar}>{editarTarefa.enabled ? "Atualizar tarefa" : "Adicionar Tarefa"}</button>
         <hr/>
