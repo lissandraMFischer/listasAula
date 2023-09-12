@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef  } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback  } from 'react'
 
 //Função principal
 export default function App(){
@@ -31,7 +31,7 @@ export default function App(){
       console.log("useEffect chamado!")
   }, [tarefas]);
 
-    function registrar(){
+    const registrar = useCallback( () => {
       if(!input){
         alert("Preencha o nome da sua tarefa")
         return;
@@ -44,7 +44,7 @@ export default function App(){
 
       setTarefas(tarefas => [...tarefas, input])
       setInput("");
-    }
+    }, [input, tarefas])
 
     function editarTarefaSalva(){
       const findIndexTarefa = tarefas.findIndex(tarefas => tarefas === editarTarefa.tarefa)
@@ -76,6 +76,10 @@ export default function App(){
       })
     }
 
+    const totalTarefas = useMemo(()=>{
+      return tarefas.length
+    },[tarefas])
+
    return (
       <div>
        
@@ -89,6 +93,8 @@ export default function App(){
         />
         <button onClick={registrar}>{editarTarefa.enabled ? "Atualizar tarefa" : "Adicionar Tarefa"}</button>
         <hr/>
+
+        <strong>Você tem: {totalTarefas} tarefas!</strong>
         
         {tarefas.map( (item, index) =>(
           <section key={item}>
